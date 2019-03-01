@@ -44,10 +44,9 @@ const AnecdoteList = ({ anecdotes }) => (
 
 const Anecdote = ({ anecdote }) => (
   <div>
-    <h2>{anecdote.content}</h2>
-    <div>{anecdote.author}</div>
-    <div>{anecdote.info}</div>
-    <div>has {anecdote.votes} votes</div>
+    <h2>{anecdote.content} by {anecdote.author}</h2>
+    <p>has {anecdote.votes} votes</p>
+    <p>for more info see <a href={anecdote.info}>{anecdote.info}</a></p>
   </div>
 )
 
