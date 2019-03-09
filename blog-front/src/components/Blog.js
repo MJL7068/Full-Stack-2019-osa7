@@ -13,10 +13,22 @@ const Blog = ({ blog, like, remove, creator }) => {
     </div>
   )
 
+  const comments = () => (
+    <div>
+      <h3>comments</h3>
+      <ul>
+        {blog.comments.map(comment =>
+          <li key={comment.id}>{comment.content}</li>
+        )}
+      </ul>
+    </div>
+  )
+
   return (
     <div>
       <h1>{blog.title}</h1>
       {details()}
+      {comments()}
     </div>
   )
 }
