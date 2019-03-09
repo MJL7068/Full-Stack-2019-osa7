@@ -21,10 +21,6 @@ const App = (props) => {
   const [password] = useField('password')
   const [user, setUser] = useState(null)
 
-  /*useEffect(() => {
-    props.initializeUsers()
-  }, [])*/
-
   useEffect(() => {
     props.initializeBlogs()
     props.initializeUsers()
@@ -46,9 +42,6 @@ const App = (props) => {
   }, [])
 
   const Menu = () => {
-    const padding = {
-      paddingRight: 5
-    }
 
     return(
       <div>
@@ -59,6 +52,18 @@ const App = (props) => {
             </div>
             <Route exact path='/' render={() => <Blogs />} />
             <Route path='/users' render={() => <Users />} />
+            <Route exact path='/users/:id' render={({ match }) =>
+              <User user={userById(match.params.id)} />
+            } />
+            <Route path='/blogs/:id' render={({ match }) =>
+              <Blog
+              blog={blogById(match.params.id)}
+              like={likeBlog}
+              remove={removeBlog}
+              user={user}
+              creator={blogById(match.params.id).user.username === user.username}
+              />
+            } />
           </div>
         </Router>
       </div>
@@ -66,36 +71,76 @@ const App = (props) => {
   }
 
   const Blogs = () => {
+    const padding = {
+      paddingRight: 5
+    }
+
     return(
       <div>
       <Togglable buttonLabel='create new' ref={newBlogRef}>
         <NewBlog createBlog={createBlog} />
       </Togglable>
-
-        {props.blogs.sort(byLikes).map(blog =>
-          <Blog
-            key={blog.id}
-            blog={blog}
-            like={likeBlog}
-            remove={removeBlog}
-            user={user}
-            creator={blog.user.username === user.username}
-          />
-        )}
+      {props.blogs.sort(byLikes).map(blog => 
+        <p key={blog.id} style={padding}>
+          <Link to={`/blogs/${blog.id}`}>{blog.title}</Link>
+        </p>
+      )}
+        
       </div>
     )
   }
+
+  /*
+  {props.blogs.sort(byLikes).map(blog =>
+    <Blog
+      key={blog.id}
+      blog={blog}
+      like={likeBlog}
+      remove={removeBlog}
+      user={user}
+      creator={blog.user.username === user.username}
+    />
+  )}
+  */
 
   const Users = () => {
     return(
       <div>
         <h2>Users</h2>
-        {props.users.map(user =>  
-          <p key={user.id}>{user.username} {user.name} {user.blogs.length}</p>
-        )}
+          <ul>
+            {props.users.map(user =>  
+              <li key={user.id}>
+                {user.username} <Link to={`/users/${user.id}`}>{user.name}</Link> {user.blogs.length}
+              </li>
+            )}
+          </ul>
       </div>
     )
   }
+
+  const User = ({user}) => {
+    if (user === undefined) {
+      return null
+    }
+
+    return(
+      <div>
+        <h1>{user.name}</h1>
+        <h3>added blogs</h3>
+        <ul>
+          {user.blogs.map(blog => 
+            <li key={blog.id}>{blog.title}</li>
+          )}
+        </ul>
+      </div>
+    )
+  }
+
+  const userById = (id) =>
+    props.users.find(user => user.id === id)
+
+  const blogById = (id) =>
+    props.blogs.find(blog => blog.id === id)
 
   const notify = (message, type = 'success') => {
     props.setNotification(message, type, 10000)
