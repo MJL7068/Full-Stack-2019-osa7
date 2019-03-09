@@ -1,4 +1,8 @@
 import React, { useState, useEffect } from 'react'
+import {
+  BrowserRouter as Router,
+  Route, Link, Redirect, withRouter
+} from 'react-router-dom'
 import { connect } from 'react-redux'
 import Blog from './components/Blog'
 import blogService from './services/blogs'
@@ -9,18 +13,28 @@ import Togglable from './components/Togglable'
 import { useField } from './hooks'
 import { initializeBlogs, createNewBlog, deleteBlog, LikeABlog } from './reducers/blogReducer'
 import { setNotification } from './reducers/notificationReducer'
+import { initializeUser, login } from './reducers/loginReducer'
+import { initializeUsers } from './reducers/userReducer'
 
 const App = (props) => {
   const [username] = useField('text')
   const [password] = useField('password')
   const [user, setUser] = useState(null)
-  /*const [notification, setNotification] = useState({
-    message: null
-  })*/
+
+  /*useEffect(() => {
+    props.initializeUsers()
+  }, [])*/
 
   useEffect(() => {
     props.initializeBlogs()
+    props.initializeUsers()
   }, [])
+
+  /*
+  useEffect(() => {
+    props.initializeUser()
+  }, [])
+  */
 
   useEffect(() => {
     const loggedUserJSON = window.localStorage.getItem('loggedBlogAppUser')
@@ -31,14 +45,65 @@ const App = (props) => {
     }
   }, [])
 
+  const Menu = () => {
+    const padding = {
+      paddingRight: 5
+    }
+
+    return(
+      <div>
+        <Router>
+          <div>
+            <div>
+              
+            </div>
+            <Route exact path='/' render={() => <Blogs />} />
+            <Route path='/users' render={() => <Users />} />
+          </div>
+        </Router>
+      </div>
+    )
+  }
+
+  const Blogs = () => {
+    return(
+      <div>
+      <Togglable buttonLabel='create new' ref={newBlogRef}>
+        <NewBlog createBlog={createBlog} />
+      </Togglable>
+
+        {props.blogs.sort(byLikes).map(blog =>
+          <Blog
+            key={blog.id}
+            blog={blog}
+            like={likeBlog}
+            remove={removeBlog}
+            user={user}
+            creator={blog.user.username === user.username}
+          />
+        )}
+      </div>
+    )
+  }
+
+  const Users = () => {
+    return(
+      <div>
+        <h2>Users</h2>
+        {props.users.map(user =>  
+          <p key={user.id}>{user.username} {user.name} {user.blogs.length}</p>
+        )}
+      </div>
+    )
+  }
+
   const notify = (message, type = 'success') => {
     props.setNotification(message, type, 10000)
-    //setNotification({ message, type })
-    //setTimeout(() => setNotification({ message: null }), 10000)
   }
 
   const handleLogin = async (event) => {
     event.preventDefault()
+    //props.login(event)
     try {
       const user = await loginService.login({
         username: username.value,
@@ -82,16 +147,16 @@ const App = (props) => {
       <div>
         <h2>log in to application</h2>
 
-        <Notification /*notification={notification}*/ />
+        <Notification />
 
         <form onSubmit={handleLogin}>
           <div>
             käyttäjätunnus
-            <input {...username}/>
+            <input name="username" {...username} />
           </div>
           <div>
             salasana
-            <input {...password} />
+            <input type="password" name="password" {...password} />
           </div>
           <button type="submit">kirjaudu</button>
         </form>
@@ -107,37 +172,28 @@ const App = (props) => {
     <div>
       <h2>blogs</h2>
 
-      <Notification /*notification={notification}*/ />
+      <Notification />
 
       <p>{user.name} logged in</p>
       <button onClick={handleLogout}>logout</button>
 
-      <Togglable buttonLabel='create new' ref={newBlogRef}>
-        <NewBlog createBlog={createBlog} />
-      </Togglable>
-
-      {props.blogs.sort(byLikes).map(blog =>
-        <Blog
-          key={blog.id}
-          blog={blog}
-          like={likeBlog}
-          remove={removeBlog}
-          user={user}
-          creator={blog.user.username === user.username}
-        />
-      )}
+      <Menu />
     </div>
   )
 }
 
 const mapStateToProps = (state) => {
   return {
-    blogs: state.blogs
+    blogs: state.blogs,
+    users: state.users,
   }
 }
 
 const mapDispatchToProps = {
   initializeBlogs,
+  initializeUser,
+  initializeUsers,
+  login,
   createNewBlog,
   deleteBlog,
   LikeABlog,
