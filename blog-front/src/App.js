@@ -175,7 +175,6 @@ const App = (props) => {
 
   const handleLogin = async (event) => {
     event.preventDefault()
-    //props.login(event)
     try {
       const user = await loginService.login({
         username: username.value,
