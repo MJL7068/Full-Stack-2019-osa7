@@ -79,6 +79,7 @@ const CreateNew = (props) => {
 
 
   const handleSubmit = (e) => {
+    return(() => {
     e.preventDefault()
     props.addNew({
       content,
@@ -86,6 +87,9 @@ const CreateNew = (props) => {
       info,
       votes: 0
     })
+    <Redirect to='/' />
+  }
+    )
   }
 
   return (
