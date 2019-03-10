@@ -6,7 +6,6 @@ import {
 } from 'react-router-dom'
 import { connect } from 'react-redux'
 import Blog from './components/Blog'
-//import NavigationBar from './components/NavigationBar'
 import blogService from './services/blogs'
 import loginService from './services/login'
 import NewBlog from './components/NewBlog'
@@ -44,12 +43,34 @@ const App = (props) => {
   }, [])
 
   const Menu = () => {
+    const padding = {
+      paddingRight: 5
+    }
+
+    const color = {
+      color: "white"
+    }
 
     return(
       <div>
         <Router>
           <div>
             <div>
+              <Navbar collapseOnSelect expand="lg" bg="dark" variant="dark">
+              <Navbar.Toggle aria-controls="responsive-navbar-nav" />
+              <Navbar.Collapse id="responsive-navbar-nav">
+              <Nav className="mr-auto">
+                <Nav.Link href="#" as="span">
+                  <Link style={padding} to="/">blogs</Link>
+                </Nav.Link>
+                <Nav.Link href="#" as="span">
+                  <Link style={padding} to="/users">users</Link>
+                </Nav.Link>
+              </Nav>
+              </Navbar.Collapse>
+              <p style={color}>{user.name} logged in
+              <button onClick={handleLogout}>logout</button></p>
+              </Navbar>
               
             </div>
             <Route exact path='/' render={() => <Blogs />} />
@@ -63,14 +84,17 @@ const App = (props) => {
               }
 
               return(
-              <Blog
-              blog={blogById(match.params.id)}
-              like={likeBlog}
-              remove={removeBlog}
-              user={user}
-              creator={blogById(match.params.id).user.username === user.username}
-              createComment={createComment}
-              />
+                <div>
+                  
+                  <Blog
+                    blog={blogById(match.params.id)}
+                    like={likeBlog}
+                    remove={removeBlog}
+                    user={user}
+                    creator={blogById(match.params.id).user.username === user.username}
+                    createComment={createComment}
+                  />
+                </div>
               )
             }
             } />
@@ -136,39 +160,6 @@ const App = (props) => {
           )}
         </ul>
       </div>
-    )
-  }
-
-  const NavigationBar = () => {
-    const padding = {
-      paddingRight: 5
-    }
-
-    return(
-      <Router>
-    <Navbar collapseOnSelect expand="lg" bg="dark" variant="dark">
-  <Navbar.Toggle aria-controls="responsive-navbar-nav" />
-  <Navbar.Collapse id="responsive-navbar-nav">
-    <Nav className="mr-auto">
-      <Nav.Link href="#" as="span">
-        <Link style={padding} to="/">home</Link>
-      </Nav.Link>
-      <Nav.Link href="#" as="span">
-        <Link style={padding} to="/notes">notes</Link>
-      </Nav.Link>
-      <Nav.Link href="#" as="span">
-        <Link style={padding} to="/users">users</Link>
-      </Nav.Link>
-      <Nav.Link href="#" as="span">
-        {user
-          ? <em>{user} logged in</em>
-          : <Link to="/login">login</Link>
-        }
-    </Nav.Link>
-    </Nav>
-  </Navbar.Collapse>
-</Navbar>
-</Router>
     )
   }
 
@@ -261,9 +252,6 @@ const App = (props) => {
       <h2>blogs</h2>
 
       <Notification />
-
-      <p>{user.name} logged in</p>
-      <button onClick={handleLogout}>logout</button>
 
       <Menu />
     </div>
