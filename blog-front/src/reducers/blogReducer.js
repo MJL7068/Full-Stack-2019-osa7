@@ -11,6 +11,8 @@ const reducer = (state = [], action) => {
       return state.filter(blog => blog.id !== action.data.id).sort((b1, b2) => b2.likes - b1.likes)
     case 'LIKE_BLOG':
       return state.map(blog => blog.id === action.data.id ? action.data : blog)
+    case 'COMMENT_BLOG':
+      return state.map(blog => blog.id === action.data.blog ? {...blog, comments: blog.comments.concat(action.data.content)} : blog)
     default:
       return state
   }
@@ -56,6 +58,18 @@ export const LikeABlog = (blog) => {
     dispatch({
       type: 'LIKE_BLOG',
       data: updatedBlog
+    })
+  }
+}
+
+export const addComment = (comment) => {
+  return async dispatch => {
+    console.log('blogReducer comment')
+    console.log(comment)
+    await blogsService.commentBlog(comment)
+    dispatch({
+      type: 'COMMENT_BLOG',
+      data: comment
     })
   }
 }

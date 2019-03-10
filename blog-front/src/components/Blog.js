@@ -1,7 +1,10 @@
 import React from 'react'
 import PropTypes from 'prop-types'
+import { useField } from '../hooks'
 
-const Blog = ({ blog, like, remove, creator }) => {
+const Blog = ({ blog, like, remove, creator, createComment }) => {
+  const [comment, commentReset] = useField('text')
+
   const details = () => (
     <div className='details'>
       <a href={blog.url}>{blog.url}</a>
@@ -13,12 +16,29 @@ const Blog = ({ blog, like, remove, creator }) => {
     </div>
   )
 
+  const handleSubmit = (event) => {
+    event.preventDefault()
+    console.log('comment')
+    console.log(comment)
+    createComment({
+      content: comment.value,
+      blog: blog.id
+    })
+    commentReset()
+  }
+
   const comments = () => (
     <div>
       <h3>comments</h3>
+      <div>
+      <form onSubmit={handleSubmit}>
+        <input {...comment} />
+        <button type="submit">add comment</button>
+      </form>
+    </div>
       <ul>
         {blog.comments.map(comment =>
-          <li key={comment.id}>{comment.content}</li>
+          <li key={comment.content}>{comment.content}</li>
         )}
       </ul>
     </div>

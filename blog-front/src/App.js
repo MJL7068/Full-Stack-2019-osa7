@@ -1,17 +1,19 @@
 import React, { useState, useEffect } from 'react'
+import { Table, Navbar, Nav } from 'react-bootstrap'
 import {
   BrowserRouter as Router,
   Route, Link, Redirect, withRouter
 } from 'react-router-dom'
 import { connect } from 'react-redux'
 import Blog from './components/Blog'
+//import NavigationBar from './components/NavigationBar'
 import blogService from './services/blogs'
 import loginService from './services/login'
 import NewBlog from './components/NewBlog'
 import Notification from './components/Notification'
 import Togglable from './components/Togglable'
 import { useField } from './hooks'
-import { initializeBlogs, createNewBlog, deleteBlog, LikeABlog } from './reducers/blogReducer'
+import { initializeBlogs, createNewBlog, deleteBlog, LikeABlog, addComment } from './reducers/blogReducer'
 import { setNotification } from './reducers/notificationReducer'
 import { initializeUser, login } from './reducers/loginReducer'
 import { initializeUsers } from './reducers/userReducer'
@@ -55,14 +57,22 @@ const App = (props) => {
             <Route exact path='/users/:id' render={({ match }) =>
               <User user={userById(match.params.id)} />
             } />
-            <Route path='/blogs/:id' render={({ match }) =>
+            <Route path='/blogs/:id' render={({ match }) => {
+              if (user === undefined) {
+                return null
+              }
+
+              return(
               <Blog
               blog={blogById(match.params.id)}
               like={likeBlog}
               remove={removeBlog}
               user={user}
               creator={blogById(match.params.id).user.username === user.username}
+              createComment={createComment}
               />
+              )
+            }
             } />
           </div>
         </Router>
@@ -90,30 +100,23 @@ const App = (props) => {
     )
   }
 
-  /*
-  {props.blogs.sort(byLikes).map(blog =>
-    <Blog
-      key={blog.id}
-      blog={blog}
-      like={likeBlog}
-      remove={removeBlog}
-      user={user}
-      creator={blog.user.username === user.username}
-    />
-  )}
-  */
-
   const Users = () => {
     return(
       <div>
         <h2>Users</h2>
-          <ul>
+        <Table>
+          <tbody>
+            <tr>
+              <td></td><td>blogs created</td>
+            </tr>
             {props.users.map(user =>  
-              <li key={user.id}>
-                {user.username} <Link to={`/users/${user.id}`}>{user.name}</Link> {user.blogs.length}
-              </li>
+              <tr key={user.id}>
+                <td>{user.username} <Link to={`/users/${user.id}`}>{user.name}</Link></td> 
+                <td>{user.blogs.length}</td>
+              </tr>
             )}
-          </ul>
+          </tbody>
+        </Table>
       </div>
     )
   }
@@ -133,6 +136,39 @@ const App = (props) => {
           )}
         </ul>
       </div>
+    )
+  }
+
+  const NavigationBar = () => {
+    const padding = {
+      paddingRight: 5
+    }
+
+    return(
+      <Router>
+    <Navbar collapseOnSelect expand="lg" bg="dark" variant="dark">
+  <Navbar.Toggle aria-controls="responsive-navbar-nav" />
+  <Navbar.Collapse id="responsive-navbar-nav">
+    <Nav className="mr-auto">
+      <Nav.Link href="#" as="span">
+        <Link style={padding} to="/">home</Link>
+      </Nav.Link>
+      <Nav.Link href="#" as="span">
+        <Link style={padding} to="/notes">notes</Link>
+      </Nav.Link>
+      <Nav.Link href="#" as="span">
+        <Link style={padding} to="/users">users</Link>
+      </Nav.Link>
+      <Nav.Link href="#" as="span">
+        {user
+          ? <em>{user} logged in</em>
+          : <Link to="/login">login</Link>
+        }
+    </Nav.Link>
+    </Nav>
+  </Navbar.Collapse>
+</Navbar>
+</Router>
     )
   }
 
@@ -172,6 +208,13 @@ const App = (props) => {
   const createBlog = async (blog) => {
     props.createNewBlog(blog)
     notify(`a new blog ${blog.title} by ${blog.author} added`)
+  }
+
+  const createComment = async (comment) => {
+    console.log('app comment-object')
+    console.log(comment)
+    props.addComment(comment)
+    notify(`a new comment ${comment.content} added`)
   }
 
   const likeBlog = async (blog) => {
@@ -214,7 +257,7 @@ const App = (props) => {
   const byLikes = (b1, b2) => b2.likes - b1.likes
 
   return (
-    <div>
+    <div className="container">
       <h2>blogs</h2>
 
       <Notification />
@@ -242,6 +285,7 @@ const mapDispatchToProps = {
   createNewBlog,
   deleteBlog,
   LikeABlog,
+  addComment,
   setNotification
 }
 
